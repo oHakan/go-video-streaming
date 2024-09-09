@@ -1,36 +1,21 @@
 package main
 
 import (
-	"github.com/oHakan/go-video-streaming/helpers"
-	"github.com/oHakan/go-video-streaming/src/api/controller"
-	"github.com/oHakan/go-video-streaming/src/api/handler"
-	"github.com/oHakan/go-video-streaming/src/internal/config"
-	"github.com/oHakan/go-video-streaming/src/pkg/fiber"
 	"log"
+
+	"github.com/oHakan/go-video-streaming/src/internal/config"
+	"github.com/oHakan/go-video-streaming/src/internal/server"
 )
 
 func main() {
-	fiberAPI := fiber.NewFiberAPI()
-
-	log.Print("Video streaming service has started.")
 	config.InitializeConfig()
 
+	app := server.SetupServer()
+
 	port := config.GetPort()
+	log.Printf("Video streaming service starting on port %s", port)
 
-	// Initialize the controller and handler
-	staticFolderPath := config.GetStaticFolderPath()
-	mainStaticFolderDist := helpers.GetCurrentPath() + staticFolderPath
-
-	newController := controller.NewController(mainStaticFolderDist)
-	newHandler := handler.NewHandler(newController)
-
-	fiberAPI.Post("/upload-video", newHandler.UploadVideoHandler)
-	fiberAPI.Static("/static", mainStaticFolderDist)
-	fiberAPI.Get("/video-details", newHandler.VideoDetailsHandler)
-
-	err := fiberAPI.Listen(":" + port)
-
-	if err != nil {
-		panic(err)
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }

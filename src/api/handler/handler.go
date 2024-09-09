@@ -15,13 +15,19 @@ type handler struct {
 }
 
 func NewHandler(controller controller.Controller) Handler {
-	return &handler{
-		Controller: controller,
+	return &handler{Controller: controller}
+}
+
+func (h *handler) UploadVideoHandler(c *fiber.Ctx) error {
+	if err := h.Controller.UploadVideoController(c); err != nil {
+		return err // Fiber will handle the error response
 	}
+	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h handler) VideoDetailsHandler(c *fiber.Ctx) error {
-	return h.Controller.VideoDetailsController(c)
+func (h *handler) VideoDetailsHandler(c *fiber.Ctx) error {
+	if err := h.Controller.VideoDetailsController(c); err != nil {
+		return err // Fiber will handle the error response
+	}
+	return c.SendStatus(fiber.StatusOK)
 }
-
-func (h handler) UploadVideoHandler(c *fiber.Ctx) error { return h.Controller.UploadVideoController(c) }

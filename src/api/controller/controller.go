@@ -1,11 +1,16 @@
 package controller
 
 import (
-	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/oHakan/go-video-streaming/helpers"
 	"log"
+	"path/filepath"
 	"strings"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/oHakan/go-video-streaming/src/internal/helpers"
+)
+
+const (
+	allowedExtension = ".mp4"
 )
 
 type Controller interface {
@@ -18,52 +23,47 @@ type controller struct {
 }
 
 func NewController(mainStaticFolderDist string) Controller {
-	return &controller{
-		mainStaticFolderDist,
-	}
+	return &controller{MainStaticFolderDist: mainStaticFolderDist}
 }
 
-func (c2 controller) UploadVideoController(c *fiber.Ctx) error {
+func (ctrl *controller) UploadVideoController(c *fiber.Ctx) error {
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid file upload")
 	}
 
-	splittedFileName := strings.Split(file.Filename, ".")
-
-	if splittedFileName[1] != "mp4" {
-		return c.SendStatus(fiber.StatusBadRequest)
+	if filepath.Ext(file.Filename) != allowedExtension {
+		return fiber.NewError(fiber.StatusBadRequest, "Only .mp4 files are allowed")
 	}
 
-	fileNameWithoutExtension := splittedFileName[0]
-	fileDestination := c2.MainStaticFolderDist + "/" + fileNameWithoutExtension
-	isPathExists := helpers.IsDirectoryExists(fileDestination)
+	fileNameWithoutExt := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
+	fileDestination := filepath.Join(ctrl.MainStaticFolderDist, fileNameWithoutExt)
 
-	if isPathExists {
-		return c.SendStatus(fiber.StatusInternalServerError)
+	if helpers.IsDirectoryExists(fileDestination) {
+		return fiber.NewError(fiber.StatusConflict, "File already exists")
 	}
 
-	createdFilePath := helpers.CreateNewStaticDirectory(fileDestination)
-
-	if createdFilePath != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+	if err := helpers.CreateNewStaticDirectory(fileDestination); err != nil {
+		log.Printf("Failed to create directory: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to process video")
 	}
 
-	uploadedFilePath := fmt.Sprintf("%s/%s", fileDestination, file.Filename)
-	err = c.SaveFile(file, uploadedFilePath)
+	uploadedFilePath := filepath.Join(fileDestination, file.Filename)
+	if err := c.SaveFile(file, uploadedFilePath); err != nil {
+		log.Printf("Failed to save file: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to save video")
+	}
 
 	command := helpers.GenerateFFMPEGCommand(fileDestination, file.Filename)
-
-	err, stderr := helpers.RunCommand(command)
-
-	if err != nil {
+	if err, stderr := helpers.RunCommand(command); err != nil {
 		log.Printf("ffmpeg error: %v: %s", err, stderr.String())
-		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("ffmpeg error: %v: %s", err, stderr.String()))
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to process video")
 	}
 
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (c2 controller) VideoDetailsController(c *fiber.Ctx) error {
-	return c.SendStatus(fiber.StatusOK)
+func (ctrl *controller) VideoDetailsController(c *fiber.Ctx) error {
+	// Implement video details logic here
+	return c.SendStatus(fiber.StatusNotImplemented)
 }
