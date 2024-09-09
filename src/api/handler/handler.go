@@ -6,7 +6,7 @@ import (
 )
 
 type Handler interface {
-	ServeVideoHandler(c *fiber.Ctx) error
+	UploadVideoHandler(c *fiber.Ctx) error
 	VideoDetailsHandler(c *fiber.Ctx) error
 }
 
@@ -20,10 +20,8 @@ func NewHandler(controller controller.Controller) Handler {
 	}
 }
 
-func (h handler) ServeVideoHandler(c *fiber.Ctx) error {
-	return h.Controller.ServeVideoController(c)
-}
-
 func (h handler) VideoDetailsHandler(c *fiber.Ctx) error {
 	return h.Controller.VideoDetailsController(c)
 }
+
+func (h handler) UploadVideoHandler(c *fiber.Ctx) error { return h.Controller.UploadVideoController(c) }
