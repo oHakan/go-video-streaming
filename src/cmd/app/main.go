@@ -18,7 +18,8 @@ func main() {
 	port := config.GetPort()
 
 	// Initialize the controller and handler
-	mainStaticFolderDist := helpers.GetCurrentPath() + "/static"
+	staticFolderPath := config.GetStaticFolderPath()
+	mainStaticFolderDist := helpers.GetCurrentPath() + staticFolderPath
 
 	newController := controller.NewController(mainStaticFolderDist)
 	newHandler := handler.NewHandler(newController)

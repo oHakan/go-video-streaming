@@ -22,3 +22,7 @@ func InitializeConfig() {
 func GetPort() string {
 	return os.Getenv("PORT")
 }
+
+func GetStaticFolderPath() string {
+	return os.Getenv("STATIC_FOLDER_PATH")
+}
