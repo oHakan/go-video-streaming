@@ -1,0 +1,38 @@
+basePath: /
+host: localhost:9000
+info:
+  contact:
+    email: osmanhakan54@gmail.com
+    name: oHakan
+  description: This service provides your video CDN gateway
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: GoLang - Streaming Service
+  version: "1.0"
+paths:
+  /upload-video:
+    post:
+      consumes:
+      - application/json
+      description: Upload new video to server. (Only .mp4 files allowed)
+      parameters:
+      - description: Video file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            type: Internal
+      summary: Upload new video
+      tags:
+      - video
+swagger: "2.0"
