@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/oHakan/go-video-streaming/src/internal/config"
 	"log"
 	"path/filepath"
 	"strings"
@@ -71,7 +72,9 @@ func (ctrl *controller) UploadVideoController(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Failed to process video")
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	staticFilePath := config.GetStaticFolderPath()
+
+	return c.Status(fiber.StatusOK).Send([]byte("http://localhost:9000" + staticFilePath + "/" + fileNameWithoutExt + "/playlist.m3u8"))
 }
 
 func (ctrl *controller) VideoDetailsController(c *fiber.Ctx) error {
