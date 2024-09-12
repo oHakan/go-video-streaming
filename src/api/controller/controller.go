@@ -26,6 +26,17 @@ func NewController(mainStaticFolderDist string) Controller {
 	return &controller{MainStaticFolderDist: mainStaticFolderDist}
 }
 
+// UploadVideoController
+// ShowAccount godoc
+// @Summary      Upload new video
+// @Description  Upload new video to server. (Only .mp4 files allowed)
+// @Tags         video
+// @Accept       json
+// @Produce      json
+// @Param        file formData file true "Video file"
+// @Success      200
+// @Failure      500  Internal Server Error
+// @Router       /upload-video [post]
 func (ctrl *controller) UploadVideoController(c *fiber.Ctx) error {
 	file, err := c.FormFile("file")
 	if err != nil {
